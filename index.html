@@ -20,6 +20,7 @@
     --oy: #2e8f4e;
     --oy-soft: #e3f4e8;
     --tile: #eef2f8;
+    --photo: #ffffff; /* product photos are shot on white, so the tile stays white in both themes */
     --f-display: "Jua", "Gowun Dodum", system-ui, sans-serif;
     --f-body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
     --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -80,9 +81,10 @@
   th { font-family: var(--f-mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 500; background: var(--paper); }
   td.no { font-family: var(--f-mono); color: var(--muted); font-size: 13px; width: 36px; text-align: center; }
   .pic {
-    width: 64px; height: 64px; border-radius: 14px; background: var(--tile);
-    display: grid; place-items: center; font-size: 34px; position: relative;
+    width: 88px; height: 88px; border-radius: 14px; background: var(--photo);
+    border: 1px solid var(--line); position: relative;
   }
+  .pic img { width: 100%; height: 100%; object-fit: contain; border-radius: 13px; display: block; }
   .pic .x2 {
     position: absolute; right: -6px; bottom: -6px; font-family: var(--f-mono); font-size: 10px; font-weight: 600;
     background: var(--accent); color: var(--sheet); border-radius: 999px; padding: 1px 6px;
@@ -109,6 +111,8 @@
   .receipt h2 { font-family: var(--f-display); font-weight: 400; font-size: 22px; margin: 0; }
   .r-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 14px; }
   .r-list li { display: flex; justify-content: space-between; gap: 10px; }
+  .r-name { display: inline-flex; align-items: center; gap: 8px; }
+  .r-name img { width: 28px; height: 28px; border-radius: 6px; background: var(--photo); object-fit: contain; }
   .r-list .p { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
   .r-empty { color: var(--muted); font-size: 13px; margin: 0; }
   .r-total { border-top: 1px dashed var(--line); padding-top: 10px; display: flex; justify-content: space-between; align-items: baseline; }
@@ -134,7 +138,7 @@
     <div class="eyebrow">Daiso · Convenience Store · Olive Young</div>
     <h1>한국에서 꼭 사야 할 <em>짝이 있는</em> 물건 20</h1>
     <p class="lead">외국 초·중등 친구들을 위한 쇼핑 리스트예요. 영어로 늘 <b>복수형(-s)</b>으로 쓰거나 <b>a pair of</b>로 세는 물건만 골랐어요. 마음에 드는 물건을 장바구니에 담고 예산을 확인해 보세요.</p>
-    <p class="note">가격은 선물용 세트·묶음 기준 대략적인 금액(10,000~70,000원)이며, 달러는 1 USD ≈ 1,400원으로 계산했어요. 실제 매장 가격과 다를 수 있어요.</p>
+    <p class="note">사진은 이해를 돕기 위한 예시 이미지(AI 생성)예요. 가격은 선물용 세트·묶음 기준 대략적인 금액(10,000~70,000원)이며, 달러는 1 USD ≈ 1,400원으로 계산했어요. 실제 매장 가격과 다를 수 있어요.</p>
   </header>
 
   <div class="layout">
@@ -241,7 +245,7 @@
       const inCart = state.cart.has(i.no);
       return `<tr>
         <td class="no">${i.no}</td>
-        <td><div class="pic" role="img" aria-label="${i.en}">${i.e}${i.pair ? '<span class="x2">×2</span>' : ""}</div></td>
+        <td><div class="pic"><img src="images/${i.en.replace(/ /g, "-")}.png" alt="${i.en} (${i.ko})" width="88" height="88" loading="lazy">${i.pair ? '<span class="x2">×2</span>' : ""}</div></td>
         <td><div class="en">${i.en}</div><div class="ko">${i.ko}</div></td>
         <td class="count"><b>${i.c}</b> ${i.en}</td>
         <td><span class="store ${i.s}">${STORES[i.s]}</span></td>
@@ -254,7 +258,7 @@
   function renderCart() {
     const items = ITEMS.filter(i => state.cart.has(i.no));
     const total = items.reduce((s, i) => s + i.p, 0);
-    $("rlist").innerHTML = items.map(i => `<li><span>${i.e} ${i.en}</span><span class="p">${won(i.p)}</span></li>`).join("");
+    $("rlist").innerHTML = items.map(i => `<li><span class="r-name"><img src="images/${i.en.replace(/ /g, "-")}.png" alt="" width="28" height="28">${i.en}</span><span class="p">${won(i.p)}</span></li>`).join("");
     $("rempty").hidden = items.length > 0;
     $("total").textContent = won(total);
     const budget = Math.max(0, Number($("budget").value) || 0);
