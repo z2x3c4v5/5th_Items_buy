@@ -1,10 +1,11 @@
+<meta charset="utf-8">
 <title>Pairs Shopping Korea</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
-  /* Layout: a shopping-list notebook — header, store filter chips, one price table, a sticky basket receipt. */
+  /* Layout: a shopping-list notebook — header, store filter chips, one wide price table with large photos; tap a photo to save it. */
   :root {
     --paper: #f6f8fb;
     --sheet: #ffffff;
@@ -20,6 +21,7 @@
     --oy: #2e8f4e;
     --oy-soft: #e3f4e8;
     --tile: #eef2f8;
+    --shadow: rgba(28, 36, 51, .14);
     --photo: #ffffff; /* product photos are shot on white, so the tile stays white in both themes */
     --f-display: "Jua", "Gowun Dodum", system-ui, sans-serif;
     --f-body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
@@ -30,14 +32,14 @@
       --paper: #11151d; --sheet: #181e29; --ink: #e8edf6; --muted: #9aa6ba; --line: #2a3242;
       --accent: #8fb0ff; --accent-soft: #1f2b47;
       --daiso: #ff8a80; --daiso-soft: #3a1f1f; --cvs: #c39bff; --cvs-soft: #2c2140;
-      --oy: #74d394; --oy-soft: #1a3324; --tile: #222a38; color-scheme: dark;
+      --oy: #74d394; --oy-soft: #1a3324; --tile: #222a38; --shadow: rgba(0, 0, 0, .45); color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
     --paper: #11151d; --sheet: #181e29; --ink: #e8edf6; --muted: #9aa6ba; --line: #2a3242;
     --accent: #8fb0ff; --accent-soft: #1f2b47;
     --daiso: #ff8a80; --daiso-soft: #3a1f1f; --cvs: #c39bff; --cvs-soft: #2c2140;
-    --oy: #74d394; --oy-soft: #1a3324; --tile: #222a38; color-scheme: dark;
+    --oy: #74d394; --oy-soft: #1a3324; --tile: #222a38; --shadow: rgba(0, 0, 0, .45); color-scheme: dark;
   }
   * { box-sizing: border-box; }
   body {
@@ -58,9 +60,6 @@
   .lead { margin: 0; color: var(--muted); max-width: 62ch; }
   .note { font-size: 13px; color: var(--muted); margin: 0; }
 
-  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; }
-  @media (max-width: 880px) { .layout { grid-template-columns: minmax(0, 1fr); } }
-
   .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip {
@@ -75,21 +74,31 @@
 
   .main { display: grid; gap: 14px; min-width: 0; }
   .table-box { overflow-x: auto; background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; }
-  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: inherit; }
+  table { border-collapse: collapse; width: 100%; min-width: 600px; font-size: inherit; }
   th, td { padding: 10px 12px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--line); }
   tbody tr:last-child td { border-bottom: 0; }
   th { font-family: var(--f-mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 500; background: var(--paper); }
   td.no { font-family: var(--f-mono); color: var(--muted); font-size: 13px; width: 36px; text-align: center; }
   .pic {
-    width: 88px; height: 88px; border-radius: 14px; background: var(--photo);
-    border: 1px solid var(--line); position: relative;
+    width: 140px; height: 140px; border-radius: 16px; background: var(--photo);
+    border: 1px solid var(--line); position: relative; padding: 0; cursor: pointer;
+    display: block; transition: transform .15s, box-shadow .15s;
   }
-  .pic img { width: 100%; height: 100%; object-fit: contain; border-radius: 13px; display: block; }
+  .pic:hover { transform: translateY(-2px); box-shadow: 0 6px 18px var(--shadow); }
+  .pic img { width: 100%; height: 100%; object-fit: contain; border-radius: 15px; display: block; }
   .pic .x2 {
-    position: absolute; right: -6px; bottom: -6px; font-family: var(--f-mono); font-size: 10px; font-weight: 600;
-    background: var(--accent); color: var(--sheet); border-radius: 999px; padding: 1px 6px;
+    position: absolute; left: 8px; top: 8px; font-family: var(--f-mono); font-size: 11px; font-weight: 600;
+    background: var(--accent); color: var(--sheet); border-radius: 999px; padding: 1px 7px;
   }
-  .en { font-family: var(--f-display); font-size: 20px; line-height: 1.2; }
+  .pic .dl {
+    position: absolute; right: 8px; bottom: 8px; font-size: 12px;
+    background: var(--ink); color: var(--sheet); border-radius: 999px; padding: 2px 9px; opacity: .85;
+  }
+  .pic:hover .dl, .pic:focus-visible .dl { opacity: 1; }
+  .name-btn { font: inherit; color: inherit; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; }
+  .name-btn:hover .en { color: var(--accent); }
+  @media (max-width: 560px) { .pic { width: 104px; height: 104px; } }
+  .en { font-family: var(--f-display); font-size: 24px; line-height: 1.2; }
   .ko { color: var(--muted); font-size: 13px; }
   .count { font-family: var(--f-mono); font-size: 13px; }
   .count b { color: var(--accent); font-weight: 600; }
@@ -99,93 +108,57 @@
   .store.oy { background: var(--oy-soft); color: var(--oy); }
   td.price { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; white-space: nowrap; }
   td.price small { display: block; font-weight: 500; color: var(--muted); font-size: 11px; }
-  .add {
-    font: inherit; font-size: 13px; cursor: pointer; border-radius: 8px; padding: 6px 10px; white-space: nowrap;
-    border: 1px solid var(--accent); background: transparent; color: var(--accent);
-  }
-  .add[aria-pressed="true"] { background: var(--accent); color: var(--sheet); }
-
-  aside { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); display: grid; gap: 14px; }
-  @media (max-width: 880px) { aside { position: static; } }
-  .receipt { background: var(--sheet); border: 1px dashed var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 12px; }
-  .receipt h2 { font-family: var(--f-display); font-weight: 400; font-size: 22px; margin: 0; }
-  .r-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 14px; }
-  .r-list li { display: flex; justify-content: space-between; gap: 10px; }
-  .r-name { display: inline-flex; align-items: center; gap: 8px; }
-  .r-name img { width: 28px; height: 28px; border-radius: 6px; background: var(--photo); object-fit: contain; }
-  .r-list .p { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
-  .r-empty { color: var(--muted); font-size: 13px; margin: 0; }
-  .r-total { border-top: 1px dashed var(--line); padding-top: 10px; display: flex; justify-content: space-between; align-items: baseline; }
-  .r-total .p { font-family: var(--f-mono); font-size: 20px; font-weight: 600; }
-  .budget { display: grid; gap: 6px; font-size: 13px; }
-  .budget label { color: var(--muted); }
-  .budget input { font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); width: 100%; font-family: var(--f-mono); }
-  .bar { height: 8px; background: var(--tile); border-radius: 999px; overflow: hidden; }
-  .bar span { display: block; height: 100%; background: var(--oy); width: 0; transition: width .25s; }
-  .bar.over span { background: var(--daiso); }
-  .b-msg { font-size: 13px; }
-  .clear { font: inherit; font-size: 13px; background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; justify-self: start; padding: 0; }
-
   .learn { background: var(--accent-soft); border-radius: 14px; padding: 18px; display: grid; gap: 8px; font-size: 14px; }
   .learn h3 { font-family: var(--f-display); font-weight: 400; font-size: 18px; margin: 0; }
   .learn p { margin: 0; }
   .learn .s { font-family: var(--f-mono); font-size: 13px; }
-  @media (prefers-reduced-motion: reduce) { .bar span { transition: none; } }
+  .learn { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); column-gap: 20px; }
+  .learn h3 { grid-column: 1 / -1; }
+  .learn div { display: grid; gap: 2px; }
+  .toast {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+    background: var(--ink); color: var(--sheet); padding: 10px 16px; border-radius: 10px; font-size: 14px;
+    max-width: calc(100% - 32px); z-index: 20;
+  }
+  @media (prefers-reduced-motion: reduce) { .pic { transition: none; } }
 </style>
 
 <div class="wrap">
   <header>
     <div class="eyebrow">Daiso · Convenience Store · Olive Young</div>
     <h1>한국에서 꼭 사야 할 <em>짝이 있는</em> 물건 20</h1>
-    <p class="lead">외국 초·중등 친구들을 위한 쇼핑 리스트예요. 영어로 늘 <b>복수형(-s)</b>으로 쓰거나 <b>a pair of</b>로 세는 물건만 골랐어요. 마음에 드는 물건을 장바구니에 담고 예산을 확인해 보세요.</p>
+    <p class="lead">외국 초·중등 친구들을 위한 쇼핑 리스트예요. 영어로 늘 <b>복수형(-s)</b>으로 쓰거나 <b>a pair of</b>로 세는 물건만 골랐어요. <b>사진이나 이름을 누르면 그림을 저장</b>할 수 있어요.</p>
     <p class="note">사진은 이해를 돕기 위한 예시 이미지(AI 생성)예요. 가격은 선물용 세트·묶음 기준 대략적인 금액(10,000~70,000원)이며, 달러는 1 USD ≈ 1,400원으로 계산했어요. 실제 매장 가격과 다를 수 있어요.</p>
   </header>
 
-  <div class="layout">
-    <section class="main">
-      <div class="controls">
-        <div class="chips" id="chips" role="group" aria-label="가게 선택"></div>
-        <select id="sort" aria-label="정렬">
-          <option value="no">번호순</option>
-          <option value="low">낮은 가격순</option>
-          <option value="high">높은 가격순</option>
-        </select>
-      </div>
-      <div class="table-box">
-        <table>
-          <thead>
-            <tr><th>No.</th><th>그림</th><th>물건</th><th>세는 법</th><th>어디서?</th><th style="text-align:right">가격</th><th></th></tr>
-          </thead>
-          <tbody id="rows"></tbody>
-        </table>
-      </div>
-    </section>
+  <section class="main">
+    <div class="controls">
+      <div class="chips" id="chips" role="group" aria-label="가게 선택"></div>
+      <select id="sort" aria-label="정렬">
+        <option value="no">번호순</option>
+        <option value="low">낮은 가격순</option>
+        <option value="high">높은 가격순</option>
+      </select>
+    </div>
+    <div class="table-box">
+      <table>
+        <thead>
+          <tr><th>No.</th><th>그림 (눌러서 저장)</th><th>물건</th><th>세는 법</th><th>어디서?</th><th style="text-align:right">가격</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
 
-    <aside>
-      <div class="receipt" aria-live="polite">
-        <h2>내 장바구니</h2>
-        <ul class="r-list" id="rlist"></ul>
-        <p class="r-empty" id="rempty">아직 담은 물건이 없어요. 표에서 "담기"를 눌러 보세요.</p>
-        <div class="r-total"><span>합계</span><span class="p" id="total">0원</span></div>
-        <div class="budget">
-          <label for="budget">내 예산 (원)</label>
-          <input id="budget" type="number" min="0" step="10000" value="100000" inputmode="numeric">
-          <div class="bar" id="bar"><span></span></div>
-          <div class="b-msg" id="bmsg"></div>
-        </div>
-        <button class="clear" id="clear" type="button">장바구니 비우기</button>
-      </div>
-      <div class="learn">
-        <h3>가게에서 써 볼 영어</h3>
-        <p class="s">How much is a pair of socks?</p>
-        <p>양말 한 켤레에 얼마예요?</p>
-        <p class="s">I want two pairs of chopsticks.</p>
-        <p>젓가락 두 벌 주세요.</p>
-        <p>❌ a scissor &nbsp; ✅ <b>a pair of</b> scissors</p>
-      </div>
-    </aside>
-  </div>
+  <section class="learn">
+    <h3>가게에서 써 볼 영어</h3>
+    <div><span class="s">How much is a pair of socks?</span><span>양말 한 켤레에 얼마예요?</span></div>
+    <div><span class="s">I want two pairs of chopsticks.</span><span>젓가락 두 벌 주세요.</span></div>
+    <div><span>❌ a scissor</span><span>✅ <b>a pair of</b> scissors</span></div>
+  </section>
 </div>
+<div class="toast" id="toast" role="status" hidden></div>
 
 <script>
   const STORES = {
@@ -195,40 +168,35 @@
   };
   // pair: true → 둘이 한 쌍이라 "a pair of"로 세는 물건
   const ITEMS = [
-    { e: "🧦", en: "socks", ko: "캐릭터 양말 10켤레 세트", s: "daiso", p: 10000, c: "a pair of", pair: true },
-    { e: "👓", en: "glasses", ko: "블루라이트 차단 안경 3개", s: "daiso", p: 15000, c: "a pair of", pair: true },
-    { e: "🕶️", en: "sunglasses", ko: "어린이 선글라스 + 케이스 세트", s: "daiso", p: 12000, c: "a pair of", pair: true },
-    { e: "✂️", en: "scissors", ko: "문구 가위 세트 (안전가위 포함)", s: "daiso", p: 10000, c: "a pair of", pair: true },
-    { e: "🥢", en: "chopsticks", ko: "스테인리스 수저·젓가락 선물세트", s: "daiso", p: 18000, c: "a pair of", pair: true },
-    { e: "🧤", en: "gloves", ko: "스마트폰 터치 장갑 4켤레", s: "daiso", p: 12000, c: "a pair of", pair: true },
-    { e: "🩴", en: "slippers", ko: "캐릭터 실내 슬리퍼 3켤레", s: "daiso", p: 15000, c: "a pair of", pair: true },
-    { e: "🎧", en: "earphones", ko: "무선 블루투스 이어폰", s: "cvs", p: 25000, c: "a pair of", pair: true },
-    { e: "🔥", en: "hand warmers", ko: "손난로 핫팩 20개 박스", s: "cvs", p: 20000, c: "a pack of" },
-    { e: "🔋", en: "batteries", ko: "AA 건전지 대용량 팩", s: "cvs", p: 12000, c: "a pack of" },
-    { e: "🍜", en: "noodles", ko: "매운 볶음면 컵라면 1박스", s: "cvs", p: 22000, c: "a cup of" },
-    { e: "🥔", en: "potato chips", ko: "허니버터 감자칩 묶음", s: "cvs", p: 15000, c: "a bag of" },
-    { e: "🍬", en: "gummies", ko: "과일 젤리 10봉 묶음", s: "cvs", p: 18000, c: "a bag of" },
-    { e: "👀", en: "eye patches", ko: "하이드로겔 아이패치 3박스", s: "oy", p: 39000, c: "a pair of", pair: true },
-    { e: "🦀", en: "claw clips", ko: "집게핀 4종 세트", s: "oy", p: 15000, c: "a set of" },
-    { e: "🎀", en: "hair ties", ko: "곱창 머리끈 10개 세트", s: "oy", p: 10000, c: "a pack of" },
-    { e: "🤏", en: "tweezers", ko: "눈썹 족집게 세트", s: "oy", p: 12000, c: "a pair of", pair: true },
-    { e: "🩹", en: "pimple patches", ko: "여드름 패치 대용량", s: "oy", p: 20000, c: "a pack of" },
-    { e: "🧖", en: "sheet masks", ko: "마스크팩 30매 박스", s: "oy", p: 45000, c: "a pack of" },
-    { e: "🖌️", en: "makeup brushes", ko: "메이크업 브러시 세트 (파우치 포함)", s: "oy", p: 69000, c: "a set of" }
+    { en: "socks", ko: "캐릭터 양말 10켤레 세트", s: "daiso", p: 10000, c: "a pair of", pair: true },
+    { en: "glasses", ko: "블루라이트 차단 안경 3개", s: "daiso", p: 15000, c: "a pair of", pair: true },
+    { en: "sunglasses", ko: "어린이 선글라스 + 케이스 세트", s: "daiso", p: 12000, c: "a pair of", pair: true },
+    { en: "scissors", ko: "문구 가위 세트 (안전가위 포함)", s: "daiso", p: 10000, c: "a pair of", pair: true },
+    { en: "chopsticks", ko: "스테인리스 수저·젓가락 선물세트", s: "daiso", p: 18000, c: "a pair of", pair: true },
+    { en: "gloves", ko: "스마트폰 터치 장갑 4켤레", s: "daiso", p: 12000, c: "a pair of", pair: true },
+    { en: "slippers", ko: "캐릭터 실내 슬리퍼 3켤레", s: "daiso", p: 15000, c: "a pair of", pair: true },
+    { en: "earphones", ko: "무선 블루투스 이어폰", s: "cvs", p: 25000, c: "a pair of", pair: true },
+    { en: "hand warmers", ko: "손난로 핫팩 20개 박스", s: "cvs", p: 20000, c: "a pack of" },
+    { en: "batteries", ko: "AA 건전지 대용량 팩", s: "cvs", p: 12000, c: "a pack of" },
+    { en: "noodles", ko: "매운 볶음면 컵라면 1박스", s: "cvs", p: 22000, c: "a cup of" },
+    { en: "potato chips", ko: "허니버터 감자칩 묶음", s: "cvs", p: 15000, c: "a bag of" },
+    { en: "gummies", ko: "과일 젤리 10봉 묶음", s: "cvs", p: 18000, c: "a bag of" },
+    { en: "eye patches", ko: "하이드로겔 아이패치 3박스", s: "oy", p: 39000, c: "a pair of", pair: true },
+    { en: "claw clips", ko: "집게핀 4종 세트", s: "oy", p: 15000, c: "a set of" },
+    { en: "hair ties", ko: "곱창 머리끈 10개 세트", s: "oy", p: 10000, c: "a pack of" },
+    { en: "tweezers", ko: "눈썹 족집게 세트", s: "oy", p: 12000, c: "a pair of", pair: true },
+    { en: "pimple patches", ko: "여드름 패치 대용량", s: "oy", p: 20000, c: "a pack of" },
+    { en: "sheet masks", ko: "마스크팩 30매 박스", s: "oy", p: 45000, c: "a pack of" },
+    { en: "makeup brushes", ko: "메이크업 브러시 세트 (파우치 포함)", s: "oy", p: 69000, c: "a set of" }
   ].map((it, i) => ({ ...it, no: i + 1 }));
 
   const RATE = 1400;
   const won = n => n.toLocaleString("ko-KR") + "원";
   const usd = n => "≈ $" + (n / RATE).toFixed(0);
 
-  const state = { store: "all", sort: "no", cart: new Set() };
-  let hasSaved = false;
-  try {
-    const raw = localStorage.getItem("pairs-cart");
-    if (raw !== null) { hasSaved = true; JSON.parse(raw).forEach(n => state.cart.add(n)); }
-  } catch (e) {}
-
+  const state = { store: "all", sort: "no" };
   const $ = id => document.getElementById(id);
+  const imgPath = i => `images/${i.en.replace(/ /g, "-")}.png`;
 
   function renderChips() {
     const opts = [["all", "전체", ITEMS.length], ...Object.entries(STORES).map(([k, v]) => [k, v, ITEMS.filter(i => i.s === k).length])];
@@ -241,35 +209,45 @@
     let list = ITEMS.filter(i => state.store === "all" || i.s === state.store);
     if (state.sort === "low") list = [...list].sort((a, b) => a.p - b.p);
     if (state.sort === "high") list = [...list].sort((a, b) => b.p - a.p);
-    $("rows").innerHTML = list.map(i => {
-      const inCart = state.cart.has(i.no);
-      return `<tr>
+    $("rows").innerHTML = list.map(i => `<tr>
         <td class="no">${i.no}</td>
-        <td><div class="pic"><img src="images/${i.en.replace(/ /g, "-")}.png" alt="${i.en} (${i.ko})" width="88" height="88" loading="lazy">${i.pair ? '<span class="x2">×2</span>' : ""}</div></td>
-        <td><div class="en">${i.en}</div><div class="ko">${i.ko}</div></td>
+        <td><button type="button" class="pic" data-no="${i.no}" aria-label="${i.en} 그림 저장">
+          <img src="${imgPath(i)}" alt="${i.en} (${i.ko})" width="140" height="140" loading="lazy">
+          ${i.pair ? '<span class="x2">×2</span>' : ""}<span class="dl">⬇ 저장</span>
+        </button></td>
+        <td><button type="button" class="name-btn" data-no="${i.no}"><div class="en">${i.en}</div><div class="ko">${i.ko}</div></button></td>
         <td class="count"><b>${i.c}</b> ${i.en}</td>
         <td><span class="store ${i.s}">${STORES[i.s]}</span></td>
         <td class="price">${won(i.p)}<small>${usd(i.p)}</small></td>
-        <td><button type="button" class="add" data-no="${i.no}" aria-pressed="${inCart}">${inCart ? "담음 ✓" : "담기"}</button></td>
-      </tr>`;
-    }).join("");
+      </tr>`).join("");
   }
 
-  function renderCart() {
-    const items = ITEMS.filter(i => state.cart.has(i.no));
-    const total = items.reduce((s, i) => s + i.p, 0);
-    $("rlist").innerHTML = items.map(i => `<li><span class="r-name"><img src="images/${i.en.replace(/ /g, "-")}.png" alt="" width="28" height="28">${i.en}</span><span class="p">${won(i.p)}</span></li>`).join("");
-    $("rempty").hidden = items.length > 0;
-    $("total").textContent = won(total);
-    const budget = Math.max(0, Number($("budget").value) || 0);
-    const ratio = budget ? Math.min(1, total / budget) : (total ? 1 : 0);
-    const over = total > budget;
-    $("bar").classList.toggle("over", over);
-    $("bar").firstElementChild.style.width = (ratio * 100) + "%";
-    $("bmsg").textContent = over
-      ? `예산보다 ${won(total - budget)} 많아요.`
-      : `${won(budget - total)} 남았어요. (${usd(budget - total)})`;
-    try { localStorage.setItem("pairs-cart", JSON.stringify([...state.cart])); } catch (e) {}
+  let toastTimer;
+  function toast(msg) {
+    $("toast").textContent = msg; $("toast").hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { $("toast").hidden = true; }, 2500);
+  }
+
+  // claude.ai 안에서는 downloads 기능으로 저장하고, 그 밖(로컬 파일·웹 호스팅)에서는 일반 다운로드 링크를 쓴다
+  const downloadsReady = window.claude?.use ? window.claude.use("downloads").catch(() => null) : Promise.resolve(null);
+
+  async function saveImage(item) {
+    const filename = `${item.no}-${item.en.replace(/ /g, "-")}.png`;
+    const downloads = await downloadsReady;
+    if (downloads) {
+      try {
+        const blob = await (await fetch(imgPath(item))).blob();
+        await downloads.save({ filename, data: blob });
+        toast(`${item.en} 그림을 저장했어요.`);
+      } catch (err) {
+        if (err?.code === "declined") return;
+        toast(err?.code === "rate_limited" ? "잠시 후 다시 눌러 주세요." : "이 화면에서는 그림을 저장할 수 없어요.");
+      }
+      return;
+    }
+    const a = document.createElement("a");
+    a.href = imgPath(item); a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
   }
 
   $("chips").addEventListener("click", e => {
@@ -278,16 +256,9 @@
   });
   $("sort").addEventListener("change", e => { state.sort = e.target.value; renderRows(); });
   $("rows").addEventListener("click", e => {
-    const b = e.target.closest(".add"); if (!b) return;
-    const n = Number(b.dataset.no);
-    state.cart.has(n) ? state.cart.delete(n) : state.cart.add(n);
-    renderRows(); renderCart();
+    const b = e.target.closest("[data-no]"); if (!b) return;
+    saveImage(ITEMS.find(i => i.no === Number(b.dataset.no)));
   });
-  $("budget").addEventListener("input", renderCart);
-  $("clear").addEventListener("click", () => { state.cart.clear(); renderRows(); renderCart(); });
 
-  // 처음 열었을 때 예시로 3개를 담아 둔다 (저장된 장바구니가 없을 때만)
-  if (!hasSaved) [1, 5, 14].forEach(n => state.cart.add(n));
-
-  renderChips(); renderRows(); renderCart();
+  renderChips(); renderRows();
 </script>
