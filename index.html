@@ -219,10 +219,7 @@
     const th = Math.floor(n / 1000), r = n % 1000;
     return below1000(th) + " thousand" + (r ? " " + below1000(r) : "");
   }
-  const priceSpeech = n => {
-    const d = Math.round(n / RATE);
-    return `${inWords(n)} won. About ${inWords(d)} ${d === 1 ? "dollar" : "dollars"}.`;
-  };
+  const priceSpeech = n => `${inWords(n)} won`;
 
   const state = { store: "all", sort: "no" };
   const $ = id => document.getElementById(id);
