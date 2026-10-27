@@ -116,6 +116,7 @@
   .store.oy { background: var(--oy-soft); color: var(--oy); }
   td.price { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; white-space: nowrap; }
   td.price small { display: block; font-weight: 500; color: var(--muted); font-size: 11px; }
+  td.price .say { margin-left: 0; margin-right: -4px; text-align: right; justify-content: flex-end; font-family: var(--f-mono); }
   .learn { background: var(--accent-soft); border-radius: 14px; padding: 18px; display: grid; gap: 8px; font-size: 14px; }
   .learn h3 { font-family: var(--f-display); font-weight: 400; font-size: 18px; margin: 0; }
   .learn p { margin: 0; }
@@ -136,7 +137,7 @@
   <header>
     <div class="eyebrow">Daiso · Convenience Store · Olive Young</div>
     <h1>한국에서 꼭 사야 할 <em>짝이 있는</em> 물건 20</h1>
-    <p class="lead">외국 초·중등 친구들을 위한 쇼핑 리스트예요. 영어로 늘 <b>복수형(-s)</b>으로 쓰거나 <b>a pair of</b>로 세는 물건만 골랐어요. <b>사진을 누르면 그림을 저장</b>하고, <b>영어 단어를 누르면 발음</b>을 들을 수 있어요.</p>
+    <p class="lead">외국 초·중등 친구들을 위한 쇼핑 리스트예요. 영어로 늘 <b>복수형(-s)</b>으로 쓰거나 <b>a pair of</b>로 세는 물건만 골랐어요. <b>사진을 누르면 그림을 저장</b>하고, <b>영어 단어나 가격을 누르면 영어 발음</b>을 들을 수 있어요.</p>
     <p class="note">사진은 이해를 돕기 위한 예시 이미지(AI 생성)예요. 가격은 선물용 세트·묶음 기준 대략적인 금액(10,000~70,000원)이며, 달러는 1 USD ≈ 1,400원으로 계산했어요. 실제 매장 가격과 다를 수 있어요.</p>
   </header>
 
@@ -152,7 +153,7 @@
     <div class="table-box">
       <table>
         <thead>
-          <tr><th>No.</th><th>그림 (눌러서 저장)</th><th>물건 (눌러서 듣기)</th><th>세는 법 (눌러서 듣기)</th><th>어디서?</th><th style="text-align:right">가격</th></tr>
+          <tr><th>No.</th><th>그림 (눌러서 저장)</th><th>물건 (눌러서 듣기)</th><th>세는 법 (눌러서 듣기)</th><th>어디서?</th><th style="text-align:right">가격 (눌러서 듣기)</th></tr>
         </thead>
         <tbody id="rows"></tbody>
       </table>
@@ -202,6 +203,27 @@
   const won = n => n.toLocaleString("ko-KR") + "원";
   const usd = n => "≈ $" + (n / RATE).toFixed(0);
 
+  // 숫자를 영어 단어로 바꾼다 (예: 18000 → "eighteen thousand")
+  const ONES = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+    "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+  const TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+  function below1000(n) {
+    const h = Math.floor(n / 100), r = n % 100, out = [];
+    if (h) out.push(ONES[h] + " hundred");
+    if (r >= 20) out.push(TENS[Math.floor(r / 10)] + (r % 10 ? "-" + ONES[r % 10] : ""));
+    else if (r || !h) out.push(ONES[r]);
+    return out.join(" ");
+  }
+  function inWords(n) {
+    if (n < 1000) return below1000(n);
+    const th = Math.floor(n / 1000), r = n % 1000;
+    return below1000(th) + " thousand" + (r ? " " + below1000(r) : "");
+  }
+  const priceSpeech = n => {
+    const d = Math.round(n / RATE);
+    return `${inWords(n)} won. About ${inWords(d)} ${d === 1 ? "dollar" : "dollars"}.`;
+  };
+
   const state = { store: "all", sort: "no" };
   const $ = id => document.getElementById(id);
   const imgPath = i => `images/${i.en.replace(/ /g, "-")}.png`;
@@ -226,7 +248,7 @@
         <td><button type="button" class="say en" data-say="${i.en}" aria-label="${i.en} 발음 듣기">${i.en}<span class="spk" aria-hidden="true">🔊</span></button><div class="ko">${i.ko}</div></td>
         <td class="count"><button type="button" class="say" data-say="${i.c} ${i.en}" aria-label="${i.c} ${i.en} 발음 듣기"><span><b>${i.c}</b> ${i.en}</span><span class="spk" aria-hidden="true">🔊</span></button></td>
         <td><span class="store ${i.s}">${STORES[i.s]}</span></td>
-        <td class="price">${won(i.p)}<small>${usd(i.p)}</small></td>
+        <td class="price"><button type="button" class="say" data-say="${priceSpeech(i.p)}" aria-label="${won(i.p)} 영어로 듣기"><span class="spk" aria-hidden="true">🔊</span><span>${won(i.p)}<small>${usd(i.p)}</small></span></button></td>
       </tr>`).join("");
   }
 
